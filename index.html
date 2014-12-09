@@ -6,6 +6,7 @@
 		<meta name="viewport" content="width=device-width">
 		<title>CS467 Code Visualization</title>
 		<link rel="stylesheet" id="twentyfourteen-style-css" href="style.css" type="text/css" media="all">
+    <link rel="stylesheet" href="second_vis.css" type="text/css" media="all">
 	</head>
 
 <body class="home blog custom-background group-blog list-view full-width grid">
@@ -43,8 +44,11 @@
 	
 			<div class="entry-content">
     <div id='visualization'></div>
+    <div style='display: block;' id='countVisualization'>
+      <svg id="totals1" width="800" height="500"></svg></div>
+    </div>
     <div style='margin-top: 50px' id='history'></div>
-    <div style='margin-top: 50px' id='totals'></div>
+    <div style='margin-top: 50px' id='totals'>
 		</div><!-- .entry-content -->
 	</article><!-- #post-## -->
 	
@@ -52,23 +56,96 @@
 	</div><!-- #primary -->
 	</div><!-- #main-content -->
 
-    <script src="//code.jquery.com/jquery-1.11.0.min.js"></script>
-    <script src="//code.jquery.com/jquery-migrate-1.2.1.min.js"></script>
+  
+
+
+    <script src="http://code.jquery.com/jquery-1.11.0.min.js"></script>
+    <script src="http://code.jquery.com/jquery-migrate-1.2.1.min.js"></script>
     <script src="dataConverter.js"></script>
     <script type="text/javascript" src="d3.js"></script>
     <script type="text/javascript" src="d3.geom.js"></script>
     <script type="text/javascript" src="d3.layout.js"></script>
     <script type="text/javascript" src="CodeFlower.js"></script>
+    <script src='http://codepen.io/assets/libs/fullpage/jquery.js'></script>
+    <script src='http://d3js.org/d3.v3.min.js'></script>
     <script>
-      function replaceAll(find, replace, str) {
-        return str.replace(new RegExp(find, 'g'), replace);
-      }
-      function processHistory(history_string){
-        $("#history").html( replaceAll("\n", "</br>", history_string) );
-      }
+      // function processHistory(history_string){
+      //   $("#history").html( history_string.replace("\n", "</br>") );
+      // }
 
       function processCommitTotals(total_string){
-        $("#totals").html( replaceAll("\n", "</br>", total_string) );
+        var totals = total_string.split("\n");
+        var graph_data = new Array();
+
+        for(var i = 0; i < totals.length - 1; i++){
+          var separator = (totals[i]).trim().split("\t");
+          var obj = new Object();
+          obj.x = separator[1];
+          console.log("-------------------" + " " + separator[0] + " " + separator[1] + "\n");
+          obj.y = separator[0];
+          graph_data.push(obj);
+        }
+
+        var vis = d3.select('#totals1'),
+          WIDTH = 1000,
+          HEIGHT = 500,
+          MARGINS = {
+            top: 20,
+            right: 20,
+            bottom: 20,
+            left: 50
+          },
+          xRange = d3.scale.ordinal().rangeRoundBands([MARGINS.left, WIDTH - MARGINS.right], 0.1).domain(graph_data.map(function (d) {
+            return d.x;
+          })),
+
+
+          yRange = d3.scale.linear().range([HEIGHT - MARGINS.top, MARGINS.bottom]).domain([0,
+            d3.max(graph_data, function (d) {
+              return d.y;
+            })
+          ]),
+
+          xAxis = d3.svg.axis()
+            .scale(xRange)
+            .tickSize(5)
+            .tickSubdivide(true),
+
+          yAxis = d3.svg.axis()
+            .scale(yRange)
+            .tickSize(5)
+            .orient("left")
+            .tickSubdivide(true);
+
+
+        vis.append('svg:g')
+          .attr('class', 'x axis')
+          .attr('transform', 'translate(0,' + (HEIGHT - MARGINS.bottom) + ')')
+          .call(xAxis);
+
+        vis.append('svg:g')
+          .attr('class', 'y axis')
+          .attr('transform', 'translate(' + (MARGINS.left) + ',0)')
+          .call(yAxis);
+
+        vis.selectAll('rect')
+          .data(graph_data)
+          .enter()
+          .append('rect')
+          .attr('x', function (d) {
+            return xRange(d.x);
+          })
+          .attr('y', function (d) {
+            return yRange(d.y);
+          })
+          .attr('width', xRange.rangeBand())
+          .attr('height', function (d) {
+            return ((HEIGHT - MARGINS.bottom) - yRange(d.y));
+          })
+          .attr('fill', 'blue');
+
+        //$("#totals").html( JSON.stringify(graph_data) );
+        // $("#totals").html( total_string.replace("\n", "NEWLINE </br>") );
       }
   
       // Both args to be comma seperated
@@ -101,7 +178,7 @@
           currentCodeFlower = new CodeFlower("#visualization", w, h).update(json_formatted);
           currentCodeFlower.update(json_formatted);
     
-          processHistory(parsed['commit_history'])
+          // processHistory(parsed['commit_history'])
           processCommitTotals(parsed['loc_contribution'])
 
           $("#status").html("The analysis of the specified GitHub repository can be found below.");
@@ -131,6 +208,7 @@
 
 </div><!-- #main -->
 </div><!-- #page -->
+
 
 
 </body>
