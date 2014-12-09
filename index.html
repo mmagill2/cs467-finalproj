@@ -20,7 +20,7 @@
 		
 	<article id="post-1127" class="post-1127">
 		<header class="entry-header">
-			<h1 class="entry-title"><a href="#" rel="bookmark">Run Query</a></h1>
+			<h1 class="entry-title">Run Query</h1>
 			<div class="entry-meta">
 			</div><!-- .entry-meta -->
 		</header><!-- .entry-header -->
@@ -36,14 +36,16 @@
 
 	<article id="post-1128" class="post-1128">
 		<header class="entry-header">
-			<h1 class="entry-title"><a href="#" rel="bookmark">Results</a></h1>
+			<h1 class="entry-title">Results</h1>
 			<div class="entry-meta" id='status'>
         Please enter a GitHub URL and submit to view your analysis
 			</div><!-- .entry-meta -->
 		</header><!-- .entry-header -->
 	
 			<div class="entry-content">
+    <h3 class="entry-title" id='header1' style='display: none;'>Source Graph</h3>
     <div id='visualization'></div>
+    <h3 class="entry-title" id='header2' style='display: none;'>Top Contributors</h3>
     <div style='display: block;' id='countVisualization'>
       <svg id="totals1" width="800" height="500"></svg></div>
     </div>
@@ -182,6 +184,8 @@
           processCommitTotals(parsed['loc_contribution'])
 
           $("#status").html("The analysis of the specified GitHub repository can be found below.");
+          $("#header1").show();
+          $("#header2").show();
         });
       }
 
