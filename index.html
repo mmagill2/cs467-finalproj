@@ -60,12 +60,15 @@
     <script type="text/javascript" src="d3.layout.js"></script>
     <script type="text/javascript" src="CodeFlower.js"></script>
     <script>
+      function replaceAll(find, replace, str) {
+        return str.replace(new RegExp(find, 'g'), replace);
+      }
       function processHistory(history_string){
-        $("#history").html( history_string.replace("\n", "</br>") );
+        $("#history").html( replaceAll("\n", "</br>", history_string) );
       }
 
       function processCommitTotals(total_string){
-        $("#totals").html( total_string.replace("\n", "</br>") );
+        $("#totals").html( replaceAll("\n", "</br>", total_string) );
       }
   
       // Both args to be comma seperated
