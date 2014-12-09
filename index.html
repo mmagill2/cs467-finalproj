@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="en-US">
+	<head>
+		<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+		<meta charset="UTF-8">
+		<meta name="viewport" content="width=device-width">
+		<title>CS467 Code Visualization</title>
+		<link rel="stylesheet" id="twentyfourteen-style-css" href="style.css" type="text/css" media="all">
+	</head>
+
+<body class="home blog custom-background group-blog list-view full-width grid">
+<div id="page" class="hfeed site">
+	<div id="main" class="site-main">
+
+	<div id="main-content" class="main-content">
+    <div id="primary" class="content-area">
+	<div id="content" class="site-content" role="main">
+
+		
+	<article id="post-1127" class="post-1127">
+		<header class="entry-header">
+			<h1 class="entry-title"><a href="#" rel="bookmark">Run Query</a></h1>
+			<div class="entry-meta">
+			</div><!-- .entry-meta -->
+		</header><!-- .entry-header -->
+	
+			<div class="entry-content">
+           <table>
+            <tr><td>URL:</td><td><input type='text' value='https://github.com/gtoubassi/femtozip' size='100' id='url'></td></tr>
+            <tr><td></td><td><input type="submit" value="Submit" id="btn"></td></tr>
+           </table>
+		   </div><!-- .entry-content -->
+	</article><!-- #post-## -->
+
+
+	<article id="post-1128" class="post-1128">
+		<header class="entry-header">
+			<h1 class="entry-title"><a href="#" rel="bookmark">Results</a></h1>
+			<div class="entry-meta" id='status'>
+        Please enter a GitHub URL and submit to view your analysis
+			</div><!-- .entry-meta -->
+		</header><!-- .entry-header -->
+	
+			<div class="entry-content">
+    <div id='visualization'></div>
+    <div style='margin-top: 50px' id='history'></div>
+    <div style='margin-top: 50px' id='totals'></div>
+		</div><!-- .entry-content -->
+	</article><!-- #post-## -->
+	
+	</div><!-- #content -->
+	</div><!-- #primary -->
+	</div><!-- #main-content -->
+
+    <script src="//code.jquery.com/jquery-1.11.0.min.js"></script>
+    <script src="//code.jquery.com/jquery-migrate-1.2.1.min.js"></script>
+    <script src="dataConverter.js"></script>
+    <script type="text/javascript" src="d3.js"></script>
+    <script type="text/javascript" src="d3.geom.js"></script>
+    <script type="text/javascript" src="d3.layout.js"></script>
+    <script type="text/javascript" src="CodeFlower.js"></script>
+    <script>
+      function processHistory(history_string){
+        $("#history").html( history_string.replace("\n", "</br>") );
+      }
+
+      function processCommitTotals(total_string){
+        $("#totals").html( total_string.replace("\n", "</br>") );
+      }
+  
+      // Both args to be comma seperated
+      var currentCodeFlower = null;
+      function drawGraph(url){
+        if(url.length == 0 || url.length == 0){
+          $("#status").html("You need to enter a URL");
+          return;
+        }
+        $("#status").html("Please wait... processing your request.</br>This may take a while...");
+        $.get( "http://www.cselcik.com:120/run?url=" + url, function( data ) {
+          console.log("RECEIVED: " + data);
+          parsed = JSON.parse(data);
+
+          data = parsed['cloc_output'];
+          json_formatted = convertToJSON(data, 'cloc');
+          if(json_formatted == null){
+            $("#status").html("An error occured while receiving the results from remote endpoint");
+            return;
+          }
+          if(currentCodeFlower != null)
+            currentCodeFlower.cleanup()
+          var total = countElements(json_formatted);
+          w = parseInt(Math.sqrt(total) * 30, 10);
+          h = parseInt(Math.sqrt(total) * 30, 10);
+          if(w < 640){
+            w = 640;
+            h = 480;
+          }
+          currentCodeFlower = new CodeFlower("#visualization", w, h).update(json_formatted);
+          currentCodeFlower.update(json_formatted);
+    
+          processHistory(parsed['commit_history'])
+          processCommitTotals(parsed['loc_contribution'])
+
+          $("#status").html("The analysis of the specified GitHub repository can be found below.");
+        });
+      }
+
+    </script>
+
+
+<div id="secondary">
+		<h2 class="site-description"><div style='margin-top: 20px'>CS476 Code Visualization</div></h2>
+	
+		<div id="primary-sidebar" class="primary-sidebar widget-area" role="complementary">
+		    <aside id="categories-2" class="widget widget_categories">
+			    <h1 class="widget-title">Authors:</h1>
+			    <ul>
+						<li class="cat-item cat-item-3">Can Selcik</li>
+						<li class="cat-item cat-item-3">Scott Kruyswyk</li>
+						<li class="cat-item cat-item-3">Aaron Hindes</li>
+						<li class="cat-item cat-item-3">Joe Benassi</li>
+						<li class="cat-item cat-item-3">Matt Magill</li>
+				</ul>
+			</aside>
+			
+		</div><!-- #primary-sidebar -->
+</div><!-- #secondary -->
+
+</div><!-- #main -->
+</div><!-- #page -->
+
+
+</body>
+<script>
+  $("#btn").click(function() {
+    drawGraph( $("#url").val() );
+  });
+  $('#url').keypress(function (e) {
+   var key = e.which;
+   if(key == 13) {
+    $('#btn').click();
+    return false;  
+   }
+  });   
+</script>
+</html>
