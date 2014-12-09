@@ -6,12 +6,17 @@ path {
     fill: none;
 }
 
-.axis path,
-.axis line {
+line {
     fill: none;
     stroke: grey;
-    stroke-width: 1;
+    stroke-width: 1px;
     shape-rendering: crispEdges;
+}
+
+circle.node {
+  cursor: pointer;
+  stroke: #000;
+  stroke-width: .5px;
 }
 
 .legend {
